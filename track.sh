@@ -1,5 +1,5 @@
 #!/bin/bash
-requeriments="curl jq sed"
+requeriments="curl jq sed dialog"
 for requeriment in $requeriments; do
 	which $requeriment >/dev/null
 	if [[ "$?" != "0" ]]; then
