@@ -1,0 +1,15 @@
+# Before start:
+# - Copy this file to a file named config.ini
+# - Go to https://app.clockify.me/user/preferences#advanced , generate an API KEY and paste it here
+
+CLOCKIFY_APIKEY="fafaFAFAfafaFAFAfafaFAFAfafaFAFAfafaFAFAfafaFAFA"
+
+# - Choose your region:
+#     EU (Germany): euc1
+#     USA: use2
+#     UK: euw2
+#     AU: apse2
+
+REGION="euc1"
+
+
