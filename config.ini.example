@@ -12,4 +12,6 @@ CLOCKIFY_APIKEY="fafaFAFAfafaFAFAfafaFAFAfafaFAFAfafaFAFAfafaFAFA"
 
 REGION="euc1"
 
+# Width of the dialog boxes
+WIDTH=70
 
