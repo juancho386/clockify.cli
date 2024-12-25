@@ -1,5 +1,5 @@
 #!/bin/bash
-requeriments="curl jq sed dialog"
+requeriments="curl jq sed dialog readlink dirname"
 for requeriment in $requeriments; do
 	which $requeriment >/dev/null
 	if [[ "$?" != "0" ]]; then
@@ -8,14 +8,17 @@ for requeriment in $requeriments; do
 	fi
 done
 
-source ./config.ini
+DIR=$(readlink -f "$0")
+DIR=$(dirname "$DIR")
+source ${DIR}/config.ini
 
 
 call () {
 	local METHOD=$1
 	local ACTION=$2
 	local URL='https://api.clockify.me/api'
-	curl --silent \
+	curl \
+		--silent \
 		--request "${METHOD}" \
 		--header "X-Api-Key: ${CLOCKIFY_APIKEY}" \
 		--header "Content-Type: application/json" \
@@ -36,6 +39,7 @@ parse_menu () {
 	dialog --no-cancel --output-fd 1 --menu "$1" 11 $WIDTH 11 $options
 }
 
+user=$(call GET "/v1/user")
 workspace=$(call GET "/v1/workspaces" | jq -Mr ".[]|.id,.name" | parse_menu "Workspace")
 project=$(call GET "/v1/workspaces/${workspace}/projects" | jq -Mr ".[]|.id,.name" | parse_menu "Project") 
 
@@ -59,7 +63,12 @@ while [[ "${doExit}" == "0" ]]; do
 			call POST "/v1/workspaces/${workspace}/time-entries" "$payload"
 		;;
 		"Stop")
-			echo not yet; read
+			userId=$(jq -Mr ".id" <<<$user)
+			stoptime=$(TZ=GMT date +%Y-%m-%dT%H:%M:%SZ)
+			payload=$(jq -Mcn --arg stoptime "${stoptime}" \
+				'{end: $stoptime}' \
+			)
+			call PATCH "/v1/workspaces/${workspace}/user/${userId}/time-entries" "$payload"
 		;;
 		"Exit")
 			dialog --output-fd 1 --yesno "Are you sure?" 5 25
@@ -69,6 +78,4 @@ while [[ "${doExit}" == "0" ]]; do
 		;;
 	esac
 done
-
-
 
