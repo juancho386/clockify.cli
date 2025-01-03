@@ -68,7 +68,22 @@ while [[ "${doExit}" == "0" ]]; do
 			payload=$(jq -Mcn --arg stoptime "${stoptime}" \
 				'{end: $stoptime}' \
 			)
-			call PATCH "/v1/workspaces/${workspace}/user/${userId}/time-entries" "$payload"
+			response=$(call PATCH "/v1/workspaces/${workspace}/user/${userId}/time-entries" "$payload")
+			code=$(echo $response | jq -Mr ".code")
+			if [[ "$code" == "null" ]]; then
+				tId=$(echo $response | jq -Mr ".id")
+				tDescription=$(echo $response | jq -Mr ".description")
+				tTaskId=$(echo $response | jq -Mr ".taskId")
+				tStart=$(echo $response | jq -Mr ".timeInterval.start")
+				tEnd=$(echo $response | jq -Mr ".timeInterval.end")
+				tDuration=$(echo $response | jq -Mr ".timeInterval.duration")
+				task=$(call GET "/v1/workspaces/${workspace}/projects/${project}/tasks/${tTaskId}" "" | jq -Mr ".name")
+				message="Task: $task (Id:${tId})\nDescription: $tDescription\n- Started: $tStart\n- Ended:   $tEnd\n- Duration: $tDuration"
+			else
+				errorMsg=$(echo $response | jq -Mr ".message")
+				message="Error $code:\n$errorMsg"
+			fi
+			dialog --msgbox "$message" 13 $WIDTH
 		;;
 		"Exit")
 			dialog --output-fd 1 --yesno "Are you sure?" 5 25
